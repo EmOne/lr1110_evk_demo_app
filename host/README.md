@@ -2,12 +2,12 @@
 
 ## Install instruction
 
-Refer to [dedicated document](host/doc/install_instructions.md).
+Refer to [dedicated document](doc/install_instructions.md).
 
 Basically:
 
 ```bash
-python setup.py
+python setup.py sdist
 pip install dist/lr1110evk-<version>.tar.gz
 ```
 

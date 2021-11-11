@@ -3,11 +3,12 @@
  *
  * @brief     Radio driver definition for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_RADIO_H
@@ -135,7 +138,7 @@ lr1110_status_t lr1110_radio_get_rx_buffer_status( const void*                  
  * The value depends on the received packet type
  *
  * @param [in] context Chip implementation context
- * @param[out] pkt_status The last received packet status
+ * @param [out] pkt_status The last received packet status
  *
  * @returns Operation status
  */
@@ -147,7 +150,7 @@ lr1110_status_t lr1110_radio_get_gfsk_pkt_status( const void* context, lr1110_ra
  * The value depends on the received packet type
  *
  * @param [in] context Chip implementation context
- * @param[out] pkt_status The last received packet status
+ * @param [out] pkt_status The last received packet status
  *
  * @returns Operation status
  */
@@ -710,6 +713,21 @@ uint32_t lr1110_radio_get_gfsk_time_on_air_in_ms( const lr1110_radio_pkt_params_
  * @returns Number of RTC steps
  */
 uint32_t lr1110_radio_convert_time_in_ms_to_rtc_step( uint32_t time_in_ms );
+
+/**
+ * @brief Get the information from the last received LoRa packet header (if @ref LR1110_RADIO_LORA_PKT_EXPLICIT) or the
+ * locally configured settings (if @ref LR1110_RADIO_LORA_PKT_IMPLICIT)
+ *
+ * @remark This function can be called only if @ref LR1110_RADIO_PKT_TYPE_LORA is selected with @ref
+ * lr1110_radio_set_pkt_type
+ *
+ * @param [in] context Chip implementation context
+ * @param [out] is_crc_present  CRC configuration
+ * @param [out] cr              LoRa coding rate
+ *
+ * @returns Operation status
+ */
+lr1110_status_t lr1110_radio_get_lora_rx_info( const void* context, bool* is_crc_present, lr1110_radio_lora_cr_t* cr );
 
 #ifdef __cplusplus
 }

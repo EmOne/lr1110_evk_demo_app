@@ -100,7 +100,7 @@ void DeviceTransceiver::UpdateAlmanac( const uint8_t* almanac_buffer, const uint
 {
     if( buffer_size == LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE )
     {
-        lr1110_gnss_one_satellite_almanac_update( this->radio, almanac_buffer );
+        lr1110_gnss_almanac_update( this->radio, almanac_buffer, 1 );
     }
 }
 
@@ -111,8 +111,8 @@ bool DeviceTransceiver::FetchInterrupt( InterruptionInterface** interruption )
     // After that, the next call to FetchInterrupt must return false immediatly.
 
     uint32_t              interruption_mask = 0;
-    lr1110_system_stat1_t stat1             = {};
-    lr1110_system_stat2_t stat2             = {};
+    lr1110_system_stat1_t stat1             = { };
+    lr1110_system_stat2_t stat2             = { };
 
     lr1110_system_get_status( this->radio, &stat1, &stat2, &interruption_mask );
     lr1110_system_clear_irq_status( this->GetRadio( ), interruption_mask );
@@ -158,9 +158,11 @@ bool DeviceTransceiver::checkAlmanacUpdate( uint32_t expected_crc )
         lr1110_gnss_read_results( this->radio, result_buffer, result_size );
         if( ( result_buffer[0] == 0 ) && ( result_buffer[1] == 0 ) )
         {
-            uint32_t actual_crc = 0;
-            lr1110_gnss_get_almanac_crc( this->radio, &actual_crc );
-            update_success = ( expected_crc == actual_crc );
+            lr1110_gnss_context_status_bytestream_t context_status_buffer;
+            lr1110_gnss_context_status_t            context_status;
+            lr1110_gnss_get_context_status( this->radio, context_status_buffer );
+            lr1110_gnss_parse_context_status_buffer( context_status_buffer, &context_status );
+            update_success = ( expected_crc == context_status.global_almanac_crc );
         }
         else
         {
@@ -211,4 +213,11 @@ void DeviceTransceiver::FetchAssistanceLocation( DeviceAssistedLocation_t* assis
     assistance_location->longitude = tmp_assistance_position.longitude;
 }
 
+void DeviceTransceiver::FetchLastApplicationServerEvent( ApplicationServerEvent_t* last_application_server_event )
+{
+    *last_application_server_event = APPLICATION_SERVER_NO_EVENT;
+}
+
 bool DeviceTransceiver::HasAssistedLocationUpdated( ) { return false; }
+
+bool DeviceTransceiver::HasApplicationServerEvent( ) { return false; }

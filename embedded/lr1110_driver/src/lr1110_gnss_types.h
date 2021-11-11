@@ -3,11 +3,12 @@
  *
  * @brief     GNSS scan driver types for LR1110
  *
- * Revised BSD License
- * Copyright Semtech Corporation 2020. All rights reserved.
+ * The Clear BSD License
+ * Copyright Semtech Corporation 2021. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -17,16 +18,18 @@
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+ * NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SEMTECH CORPORATION BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef LR1110_GNSS_TYPES_H
@@ -77,11 +80,11 @@ extern "C" {
 /*!
  * @brief Size of the almanac of the GNSS context status buffer
  */
-#define LR1110_GNSS_CONTEXT_STATUS_LENGTH ( 7 )
+#define LR1110_GNSS_CONTEXT_STATUS_LENGTH ( 9 )
 
-#define LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE \
-    ( ( LR1110_GNSS_FULL_UPDATE_N_ALMANACS * LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE ) + 20 )
-
+/*!
+ * @brief Size of the whole almanac when reading
+ */
 #define LR1110_GNSS_FULL_ALMANAC_READ_BUFFER_SIZE \
     ( ( LR1110_GNSS_FULL_UPDATE_N_ALMANACS * LR1110_GNSS_SINGLE_ALMANAC_READ_SIZE ) + 4 )
 
@@ -106,13 +109,26 @@ extern "C" {
 typedef uint8_t lr1110_gnss_satellite_id_t;
 
 /*!
- * @brief bit mask indicating which information is added in the output payload
+ * @brief Bit mask indicating which information is added in the output payload - to be used with @ref
+ * LR1110_GNSS_SCAN_MODE_0_SINGLE_SCAN_LEGACY
  */
-enum lr1110_gnss_input_parameters_e
+enum lr1110_gnss_result_fields_legacy_e
 {
-    LR1110_GNSS_IRQ_PSEUDO_RANGE_MASK = ( 1 << 0 ),
-    LR1110_GNSS_DOPPLER_MASK          = ( 1 << 1 ),
-    LR1110_GNSS_BIT_CHANGE_MASK       = ( 1 << 2 ),
+    LR1110_GNSS_RESULTS_LEGACY_PSEUDO_RANGE_MASK = ( 1 << 0 ),  //!< Add pseudo-range information if set
+    LR1110_GNSS_RESULTS_LEGACY_DOPPLER_MASK      = ( 1 << 1 ),  //!< Add all Doppler information if set - up to 5 if not
+    LR1110_GNSS_RESULTS_LEGACY_BIT_CHANGE_MASK   = ( 1 << 2 ),  //!< Add bit change if set
+};
+
+/*!
+ * @brief bit mask indicating which information is added in the output payload - to be used with @ref
+ * LR1110_GNSS_SCAN_MODE_3_SINGLE_SCAN_AND_5_FAST_SCANS
+ */
+enum lr1110_gnss_result_fields_e
+{
+    LR1110_GNSS_RESULTS_DOPPLER_ENABLE_MASK = ( 1 << 0 ),  //!< Add Doppler information if set
+    LR1110_GNSS_RESULTS_DOPPLER_MASK = ( 1 << 1 ),     //!< Add up to 14 Doppler if set - up to 7 if not. Valid if @ref
+                                                       //!< LR1110_GNSS_RESULTS_DOPPLER_ENABLE_MASK is set
+    LR1110_GNSS_RESULTS_BIT_CHANGE_MASK = ( 1 << 2 ),  //!< Add bit change if set
 };
 
 /*!
@@ -141,8 +157,7 @@ typedef enum
 } lr1110_gnss_search_mode_t;
 
 /*!
- * @brief GNSS response type indicates the destination: Host MCU, GNSS solver or
- * GNSS DMC
+ * @brief GNSS response type indicates the destination: Host MCU, GNSS solver or GNSS DMC
  */
 typedef enum
 {
@@ -156,27 +171,38 @@ typedef enum
  */
 typedef enum
 {
-    LR1110_GNSS_HOST_OK                                         = 0x00,
-    LR1110_GNSS_HOST_UNEXPECTED_CMD                             = 0x01,
-    LR1110_GNSS_HOST_UNIMPLEMENTED_CMD                          = 0x02,
-    LR1110_GNSS_HOST_INVALID_PARAMETERS                         = 0x03,
-    LR1110_GNSS_HOST_MESSAGE_SANITY_CHECK_ERROR                 = 0x04,
-    LR1110_GNSS_HOST_IQ_CAPTURE_FAILS                           = 0x05,
-    LR1110_GNSS_HOST_NO_TIME                                    = 0x06,
-    LR1110_GNSS_HOST_NO_SATELLITE_DETECTED                      = 0x07,
-    LR1110_GNSS_HOST_ALMANAC_IN_FLASH_TOO_OLD                   = 0x08,
-    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_CRC_ERROR             = 0x09,
-    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_FLASH_INTEGRITY_ERROR = 0x0A,
-    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_ALMANAC_DATE_TOO_OLD  = 0x0B,
+    LR1110_GNSS_HOST_OK                                            = 0x00,
+    LR1110_GNSS_HOST_UNEXPECTED_CMD                                = 0x01,
+    LR1110_GNSS_HOST_UNIMPLEMENTED_CMD                             = 0x02,
+    LR1110_GNSS_HOST_INVALID_PARAMETERS                            = 0x03,
+    LR1110_GNSS_HOST_MESSAGE_SANITY_CHECK_ERROR                    = 0x04,
+    LR1110_GNSS_HOST_IQ_CAPTURE_FAILS                              = 0x05,
+    LR1110_GNSS_HOST_NO_TIME                                       = 0x06,
+    LR1110_GNSS_HOST_NO_SATELLITE_DETECTED                         = 0x07,
+    LR1110_GNSS_HOST_ALMANAC_IN_FLASH_TOO_OLD                      = 0x08,
+    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_CRC_ERROR                = 0x09,
+    LR1110_GNSS_HOST_ALMANAC_UPDATE_FAILS_FLASH_INTEGRITY_ERROR    = 0x0A,
+    LR1110_GNSS_HOST_ALMANAC_UPDATE_NOT_ALLOWED                    = 0x0B,
+    LR1110_GNSS_HOST_ALMANAC_CRC_ERROR                             = 0x0C,
+    LR1110_GNSS_HOST_ALMANAC_VERSION_NOT_SUPPORTED                 = 0x0D,
+    LR1110_GNSS_HOST_NOT_ENOUGH_SV_DETECTED_TO_BUILD_A_NAV_MESSAGE = 0x10,
 } lr1110_gnss_message_host_status_t;
+
+/*!
+ * @brief Message to DMC operation code
+ */
+typedef enum
+{
+    LR1110_GNSS_DMC_STATUS = 0x18,  //!< Status message in payload
+} lr1110_gnss_message_dmc_opcode_t;
 
 /*!
  * @brief GNSS single or double scan mode
  */
 typedef enum
 {
-    LR1110_GNSS_SINGLE_SCAN_MODE = 0x00,
-    LR1110_GNSS_DOUBLE_SCAN_MODE = 0x01,
+    LR1110_GNSS_SCAN_MODE_0_SINGLE_SCAN_LEGACY           = 0x00,  //!< Generated NAV message format = NAV1
+    LR1110_GNSS_SCAN_MODE_3_SINGLE_SCAN_AND_5_FAST_SCANS = 0x03,  //!< Generated NAV message format = NAV2
 } lr1110_gnss_scan_mode_t;
 
 /*!
@@ -184,11 +210,11 @@ typedef enum
  */
 typedef enum lr1110_gnss_error_code_e
 {
-    LR1110_GNSS_NO_ERROR                                  = 0,
-    LR1110_GNSS_ERROR_ALMANAC_TOO_OLD                     = 1,
-    LR1110_GNSS_ERROR_UPDATE_CRC_MISMATCH                 = 2,
-    LR1110_GNSS_ERROR_UPDATE_FLASH_MEMORY_INTEGRITY       = 3,
-    LR1110_GNSS_ERROR_UPDATE_TIME_DIFFERENCE_OVER_1_MONTH = 4,
+    LR1110_GNSS_NO_ERROR                            = 0,
+    LR1110_GNSS_ERROR_ALMANAC_TOO_OLD               = 1,
+    LR1110_GNSS_ERROR_UPDATE_CRC_MISMATCH           = 2,
+    LR1110_GNSS_ERROR_UPDATE_FLASH_MEMORY_INTEGRITY = 3,
+    LR1110_GNSS_ERROR_ALMANAC_UPDATE_NOT_ALLOWED = 4,  //!< Impossible to update more than one constellation at a time
 } lr1110_gnss_error_code_t;
 
 /*!
@@ -205,23 +231,12 @@ typedef enum lr1110_gnss_freq_search_space_e
 /*!
  * @brief Representation of absolute time for GNSS operations
  *
- * The GNSS absolute time is represented as a 32 bits word that is the number of
- * seconds elapsed since January 6th 1980, 00:00:00
+ * The GNSS absolute time is represented as a 32 bits word that is the number of seconds elapsed since January 6th 1980,
+ * 00:00:00
  *
- * The GNSS absolute time must take into account the Leap Seconds between UTC
- * time and GPS time.
+ * The GNSS absolute time must take into account the Leap Seconds between UTC time and GPS time.
  */
 typedef uint32_t lr1110_gnss_date_t;
-
-/*!
- * @brief Buffer that holds data for one satellite almanac update
- */
-typedef uint8_t lr1110_gnss_almanac_single_satellite_update_bytestram_t[LR1110_GNSS_SINGLE_ALMANAC_WRITE_SIZE];
-
-/*!
- * @brief Buffer that holds data for all almanacs full update - when writing
- */
-typedef uint8_t lr1110_gnss_almanac_full_update_bytestream_t[LR1110_GNSS_FULL_ALMANAC_WRITE_BUFFER_SIZE];
 
 /*!
  * @brief Buffer that holds data for all almanacs full update - when reading
@@ -238,19 +253,18 @@ typedef uint8_t lr1110_gnss_context_status_bytestream_t[LR1110_GNSS_CONTEXT_STAT
  */
 typedef struct lr1110_gnss_solver_assistance_position_s
 {
-    float latitude;   //!< Latitude 12 bits (latitude in degree * 2048/90) with
-                      //!< resolution 0.044°
-    float longitude;  //!< Longitude 12 bits (longitude in degree * 2048/180)
-                      //!< with resolution 0.088°
+    float latitude;   //!< Latitude 12 bits (latitude in degree * 2048/90) with resolution 0.044°
+    float longitude;  //!< Longitude 12 bits (longitude in degree * 2048/180) with resolution 0.088°
 } lr1110_gnss_solver_assistance_position_t;
 
 /*!
- * @brief Detected satellite structure
+ * @brief Detected SV structure
  */
 typedef struct lr1110_gnss_detected_satellite_s
 {
     lr1110_gnss_satellite_id_t satellite_id;
-    int8_t                     cnr;  //!< Carrier-to-noise ration (C/N) in dB
+    int8_t                     cnr;      //!< Carrier-to-noise ration (C/N) in dB
+    int16_t                    doppler;  //!< SV doppler in Hz
 } lr1110_gnss_detected_satellite_t;
 
 /*!

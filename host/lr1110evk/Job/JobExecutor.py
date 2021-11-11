@@ -182,14 +182,16 @@ class JobExecutor:
         #         "Job is configured to run nothing: will not send commands and return no results")
         #     return list()
 
-        # 1. Configure and start
-        self.configure_and_start_job(job)
+        results = list()
+        for multi_scan_index in range(job.n_scan_iteration):
+            # 1. Configure and start
+            self.configure_and_start_job(job)
 
-        # 2. Wait for event
-        self.wait_event_job(job)
+            # 2. Wait for event
+            self.wait_event_job(job)
 
-        # 3. Fetch results
-        results = self.store_result_job(job)
+            # 3. Fetch results
+            results.extend(self.store_result_job(job))
         return results
 
     def get_version_info(self):
@@ -292,6 +294,7 @@ class JobExecutor:
                 start_command.wifi_max_results_per_scan = job.wifi_max_results
                 start_command.wifi_timeout = job.wifi_timeout
                 start_command.wifi_mode = job.wifi_mode
+                start_command.wifi_abort_on_timeout = job.wifi_abort_on_timeout
                 return start_command
             elif job.wifi_enable_mode == WifiEnableMode.country_code:
                 start_command = CommandStartWifiCountryCode()
@@ -299,6 +302,7 @@ class JobExecutor:
                 start_command.wifi_nbr_retrials = job.wifi_nbr_retrials
                 start_command.wifi_max_results_per_scan = job.wifi_max_results
                 start_command.wifi_timeout = job.wifi_timeout
+                start_command.wifi_abort_on_timeout = job.wifi_abort_on_timeout
             else:
                 raise JobConfigurationFailed(job)
         elif job.has_gnss_autonomous:

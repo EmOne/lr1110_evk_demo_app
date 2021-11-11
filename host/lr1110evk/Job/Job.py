@@ -47,6 +47,7 @@ class Job:
     WIFI_MAX_RESULT_PER_SCAN_KEY = "wifi_max_result_per_scan"
     WIFI_TIMEOUT_KEY = "wifi_timeout"
     WIFI_MODE_KEY = "wifi_mode"
+    WIFI_ABORT_ON_TIMEOUT_KEY = "wifi_abort_on_timeout"
     GNSS_AUTONOMOUS_ENABLE_KEY = "gnss_autonomous_enable"
     GNSS_AUTONOMOUS_OPTION_KEY = "gnss_autonomous_option"
     GNSS_AUTONOMOUS_CAPTURE_MODE_KEY = "gnss_autonomous_capture_mode"
@@ -60,6 +61,7 @@ class Job:
     GNSS_ASSISTED_ANTENNA_SELECTION = "gnss_assisted_antenna_selection"
     GNSS_ASSISTED_CONSTELLATIONS_KEY = "gnss_assisted_constellations"
     ASSISTED_COORDINATE_KEY = "assisted_coordinate"
+    N_SCAN_ITERATION_KEY = "n_scan_iteration"
     LATITUDE_KEY = "latitude"
     LONGITUDE_KEY = "longitude"
     ALTITUDE_KEY = "altitude"
@@ -82,15 +84,16 @@ class Job:
         self.wifi_max_results = 0
         self.wifi_timeout = 0
         self.wifi_mode = WifiMode.beacon_only
+        self.wifi_abort_on_timeout = False
         self.gnss_autonomous_enable = gnss_autonomous_enable
         self.gnss_autonomous_option = GnssOption.default
-        self.gnss_autonomous_capture_mode = GnssCaptureMode.single
+        self.gnss_autonomous_capture_mode = GnssCaptureMode.mode_0_legacy
         self.gnss_autonomous_nb_satellite = 0
         self.gnss_autonomous_antenna_selection = GnssAntennaSelection.no_selection
         self.gnss_autonomous_constellation_mask = b"\x00"
         self.gnss_assisted_enable = gnss_assisted_enable
         self.gnss_assisted_option = GnssOption.default
-        self.gnss_assisted_capture_mode = GnssCaptureMode.single
+        self.gnss_assisted_capture_mode = GnssCaptureMode.mode_0_legacy
         self.gnss_assisted_nb_satellite = 0
         self.gnss_assisted_antenna_selection = GnssAntennaSelection.no_selection
         self.gnss_assisted_constellation_mask = b"\x00"
@@ -98,6 +101,7 @@ class Job:
         self.id = 0
         self.name = name
         self.n_iterations = n_iteration
+        self.n_scan_iteration = 1
         self.reset_before_job_start = reset_before_start
 
     def SetCoordinatesFromJobDict(self, coordinate_dict):
@@ -166,6 +170,9 @@ class Job:
             Job.WIFI_MODE_KEY: lambda obj, value: Job.SetWifiModeFromJobDict(
                 obj, value
             ),
+            Job.WIFI_ABORT_ON_TIMEOUT_KEY: lambda obj, value: setattr(
+                obj, "wifi_abort_on_timeout", value
+            ),
             Job.GNSS_AUTONOMOUS_OPTION_KEY: lambda obj, value: Job.SetGnssAutonomousOptionFromJobDict(
                 obj, value
             ),
@@ -198,6 +205,9 @@ class Job:
             ),
             Job.ASSISTED_COORDINATE_KEY: lambda obj, value: Job.SetCoordinatesFromJobDict(
                 obj, value
+            ),
+            Job.N_SCAN_ITERATION_KEY: lambda obj, value: setattr(
+                obj, Job.N_SCAN_ITERATION_KEY, value
             ),
         }
         SETTERS[element_key](self, element_value)
